@@ -1,0 +1,19 @@
+[package]
+name = "unit-enum"
+version = "1.0.0"
+authors = ["Renaud Denis <mail@renauddenis.com>"]
+description = "A procedural macro for deriving ordinal methods in unit-like enums for Rust."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tylium/unit-enum"
+keywords = ["enum", "derive", "proc_macro", "procmacro"]
+edition = "2021"
+readme = "README.md"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1"
+proc-macro2 = "1"
+syn = { version = "2", features = ["full"] }
+
