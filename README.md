@@ -1,22 +1,28 @@
-# UnitEnum
+# UnitEnum Crate Documentation
 
-The `unit-enum` crate introduces a procedural macro `UnitEnum` for Rust developers working with enums that consist
-entirely of unit variants. This macro enhances such enums by automatically implementing methods to manage enum variants
-more effectively, promoting ease of use and reducing boilerplate code.
+The `unit-enum` crate provides a procedural macro `UnitEnum` designed to enhance enums in Rust, particularly those
+consisting solely of unit variants. This macro simplifies working with such enums by providing methods to convert
+between enum variants and their ordinal positions, along with utility methods to count the number of variants and iterate over them.
 
 ## Features
 
-- **Ordinal Methods**: Easily obtain the ordinal of an enum variant or convert an ordinal value back to a corresponding
-  enum variant.
-- **Variant Count**: Retrieve the total number of variants in an enum.
+- `ordinal`: Retrieve the ordinal of an enum variant, starting from 0.
+- `from_ordinal`: Convert an ordinal back to an enum variant, if possible.
+- `len`: Get the total number of variants in the enum.
+- `values`: Returns an iterator over all variants of the enum, allowing for easy iteration and handling of each variant.
+
+## Limitations
+
+- Applicable only to enums with unit variants.
+- Enums with data-carrying or tuple variants are not supported and will result in a compile-time error.
 
 ## Installation
 
-To use `unit-enum` in your project, add it as a dependency in your `Cargo.toml`:
+Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-unit-enum = "1.0.0"
+unit-enum = "1.1.0"
 ```
 
 ## Quick Start
@@ -24,17 +30,26 @@ unit-enum = "1.0.0"
 ```rust
 use unit_enum::UnitEnum;
 
-#[derive(UnitEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
 enum Color {
-    Red,
-    Green,
-    Blue,
+  Red,
+  Green,
+  Blue
 }
 
-let green = Color::Green;
-assert_eq!(green.ordinal(), 1);
-assert_eq!(Color::from_ordinal(1), Some(Color::Green));
-assert_eq!(Color::len(), 3);
+fn main() {
+  println!("Ordinal of Green: {:?}", Color::Green.ordinal());
+  // Ordinal of Green: 1
+
+  println!("Value of ordinal 2: {:?}", Color::from_ordinal(2));
+  // Value of ordinal 2: Some(Blue)
+
+  println!("Number of Color variants: {:?}", Color::len());
+  // Number of Color variants: 3
+
+  println!("List of Color variants: {:?}", Color::values().collect::<Vec<_>>());
+  // List of Color variants: [Red, Green, Blue]
+}
 ```
 
 ## Contributing

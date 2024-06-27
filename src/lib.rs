@@ -1,5 +1,3 @@
-#![doc = include_str!("lib.md")]
-
 use proc_macro::TokenStream;
 
 use quote::quote;
@@ -26,7 +24,7 @@ fn impl_unit_enum(ast: &DeriveInput) -> TokenStream {
         match &variant.fields {
             Fields::Unit => {
                 quote! { #name::#variant_name => #index, }
-            },
+            }
             _ => panic!("UnitEnum only supports unit variants (no fields)"),
         }
     });
@@ -36,23 +34,40 @@ fn impl_unit_enum(ast: &DeriveInput) -> TokenStream {
         quote! { #index => Some(#name::#variant_name), }
     });
 
+    let values_arms = (0..num_variants).map(|index| {
+        quote! { #name::from_ordinal(#index).unwrap() }
+    });
+
     let gen = quote! {
         impl #name {
+            /// Returns the zero-based ordinal of the enum variant.
             pub fn ordinal(&self) -> usize {
                 match self {
                     #( #ordinal_match_arms )*
                 }
             }
 
-            pub fn from_ordinal(ord: usize) -> Option<Self> {
+            /// Converts a zero-based ordinal to an enum variant, if possible.
+            ///
+            /// Returns `None` if the ordinal is out of range.
+             pub fn from_ordinal(ord: usize) -> Option<Self> {
                 match ord {
                     #( #from_ordinal_match_arms )*
                     _ => None,
                 }
             }
 
+            /// Returns the total number of variants in the enum.
             pub fn len() -> usize {
                 #num_variants
+            }
+
+            /// Returns an iterator over all variants of the enum.
+            ///
+            /// This method creates an iterator that yields each variant in
+            /// definition order, starting from the first variant.
+            pub fn values() -> impl Iterator<Item = Self> {
+                vec![ #( #values_arms ),* ].into_iter()
             }
         }
     };
