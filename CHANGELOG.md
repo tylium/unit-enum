@@ -1,5 +1,9 @@
 # Unreleased
 
+# Version 1.2.0 (2024-07-02)
+
+- Add `discriminant()` and `from_discriminant(num)` methods
+
 # Version 1.1.0 (2024-06-27)
 
 - Add `values()` method and document all methods in UnitEnum macro
