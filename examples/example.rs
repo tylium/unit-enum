@@ -8,6 +8,9 @@ enum Color {
 }
 
 fn main() {
+    println!("Name of Blue: {:?}", Color::Blue.name());
+    // Name of Blue: "Blue"
+
     println!("Ordinal of Green: {:?}", Color::Green.ordinal());
     // Ordinal of Green: 1
 

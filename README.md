@@ -5,6 +5,7 @@ consisting solely of unit variants. This macro simplifies working with such enum
 
 ## Features
 
+- `name`: Retrieve the name of an enum variant.
 - `ordinal`: Retrieve the ordinal of an enum variant, starting from 0.
 - `from_ordinal`: Convert an ordinal back to an enum variant, if possible.
 - `discriminant`: Retrieve the discriminant of an enum variant.
@@ -23,7 +24,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-unit-enum = "1.2.0"
+unit-enum = "1.3.0"
 ```
 
 ## Quick Start
@@ -39,6 +40,9 @@ enum Color {
 }
 
 fn main() {
+    println!("Name of Blue: {:?}", Color::Blue.name());
+    // Name of Blue: "Blue"
+
     println!("Ordinal of Green: {:?}", Color::Green.ordinal());
     // Ordinal of Green: 1
 

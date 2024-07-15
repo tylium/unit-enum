@@ -19,6 +19,14 @@ fn impl_unit_enum(ast: &DeriveInput) -> TokenStream {
     let variants = &data.variants;
     let num_variants = variants.len(); // Count the number of variants
 
+    let name_match_arms = variants.iter().enumerate().map(|(index, variant)| {
+        let variant_name = &variant.ident;
+        match &variant.fields {
+            Fields::Unit => quote! { #name::#variant_name => stringify!(#variant_name) },
+            _ => panic!("UnitEnum only supports unit variants (no fields)"),
+        }
+    });
+
     let ordinal_match_arms = variants.iter().enumerate().map(|(index, variant)| {
         let variant_name = &variant.ident;
         match &variant.fields {
@@ -40,6 +48,13 @@ fn impl_unit_enum(ast: &DeriveInput) -> TokenStream {
 
     let gen = quote! {
         impl #name {
+            /// Returns the name of the enum variant.
+            pub fn name(&self) -> &str {
+                match self {
+                    #(#name_match_arms,)*
+                }
+            }
+
             /// Returns the zero-based ordinal of the enum variant.
             pub fn ordinal(&self) -> usize {
                 match self {
@@ -85,6 +100,7 @@ fn impl_unit_enum(ast: &DeriveInput) -> TokenStream {
             /// definition order, starting from the first variant.
             pub fn values() -> impl Iterator<Item = Self> {
                 vec![#(#values_arms,)*].into_iter()
+
             }
         }
     };

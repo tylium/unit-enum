@@ -1,5 +1,9 @@
 # Unreleased
 
+# Version 1.3.0 (2024-07-15)
+
+- Add `name()` method
+
 # Version 1.2.0 (2024-07-02)
 
 - Add `discriminant()` and `from_discriminant(num)` methods
