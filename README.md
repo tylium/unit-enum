@@ -24,7 +24,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-unit-enum = "1.3.0"
+unit-enum = "1.4.0"
 ```
 
 ## Quick Start
@@ -33,42 +33,66 @@ unit-enum = "1.3.0"
 use unit_enum::UnitEnum;
 
 #[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
+#[repr(i16)]  // Specify the discriminant type (optional, defaults to i32)
 enum Color {
     Red = 10,
-    Green,
+    Green,     // 11
     Blue = 45654
 }
 
 fn main() {
-    println!("Name of Blue: {:?}", Color::Blue.name());
-    // Name of Blue: "Blue"
+    // Get the name of a variant
+    assert_eq!(Color::Blue.name(), "Blue");
 
-    println!("Ordinal of Green: {:?}", Color::Green.ordinal());
-    // Ordinal of Green: 1
+    // Get the ordinal (position) of a variant
+    assert_eq!(Color::Green.ordinal(), 1);
 
-    println!("Value of ordinal 2: {:?}", Color::from_ordinal(2));
-    // Value of ordinal 2: Some(Blue)
+    // Convert from ordinal back to variant
+    assert_eq!(Color::from_ordinal(2), Some(Color::Blue));
+    assert_eq!(Color::from_ordinal(4), None);
 
-    println!("Value of ordinal 4: {:?}", Color::from_ordinal(4));
-    // Value of ordinal 4: None
+    // Get the discriminant value (respects the repr type)
+    assert_eq!(Color::Blue.discriminant(), 45654);
+    assert_eq!(Color::Green.discriminant(), 11);
 
-    println!("Discriminant of Blue: {:?}", Color::Blue.discriminant());
-    // Discriminant of Blue: 45654
+    // Convert from discriminant back to variant
+    assert_eq!(Color::from_discriminant(10), Some(Color::Red));
+    assert_eq!(Color::from_discriminant(0), None);
 
-    println!("Discriminant of Green: {:?}", Color::Green.discriminant());
-    // Discriminant of Green: 11
+    // Get the total number of variants
+    assert_eq!(Color::len(), 3);
 
-    println!("Value of discriminant 10: {:?}", Color::from_discriminant(10));
-    // Value of discriminant 10: Some(Red)
+    // Iterate over all variants
+    assert_eq!(
+        Color::values().collect::<Vec<_>>(),
+        vec![Color::Red, Color::Green, Color::Blue]
+    );
+}
+```
 
-    println!("Value of discriminant 0: {:?}", Color::from_discriminant(0));
-    // Value of discriminant 0: None
+## Discriminant Types
 
-    println!("Number of Color variants: {:?}", Color::len());
-    // Number of Color variants: 3
+The crate respects the enum's `#[repr]` attribute to determine the type of discriminant values. Supported types include:
+- `#[repr(i8)]`, `#[repr(i16)]`, `#[repr(i32)]`, `#[repr(i64)]`, `#[repr(i128)]`
+- `#[repr(u8)]`, `#[repr(u16)]`, `#[repr(u32)]`, `#[repr(u64)]`, `#[repr(u128)]`
 
-    println!("List of Color variants: {:?}", Color::values().collect::<Vec<_>>());
-    // List of Color variants: [Red, Green, Blue]
+If no `#[repr]` attribute is specified, the discriminant type defaults to `i32`.
+
+```rust
+#[derive(UnitEnum)]
+#[repr(u8)]  // Use u8 for discriminants
+enum SmallEnum {
+    A,  // 0u8
+    B,  // 1u8
+    C   // 2u8
+}
+
+#[derive(UnitEnum)]
+#[repr(i64)]  // Use i64 for large discriminants
+enum LargeEnum {
+    A = -1_000_000,
+    B = 5_000_000,
+    C = 1_000_000_000
 }
 ```
 
