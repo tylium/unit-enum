@@ -1,7 +1,7 @@
 # UnitEnum Crate Documentation
 
 The `unit-enum` crate provides a procedural macro `UnitEnum` designed to enhance enums in Rust, particularly those
-consisting solely of unit variants. This macro simplifies working with such enums by providing useful utility methods.
+consisting of unit variants. This macro simplifies working with such enums by providing useful utility methods.
 
 ## Features
 
@@ -10,13 +10,14 @@ consisting solely of unit variants. This macro simplifies working with such enum
 - `from_ordinal`: Convert an ordinal back to an enum variant, if possible.
 - `discriminant`: Retrieve the discriminant of an enum variant.
 - `from_discriminant`: Convert a discriminant back to an enum variant.
-- `len`: Get the total number of variants in the enum.
-- `values`: Returns an iterator over all variants of the enum, allowing for easy iteration and handling of each variant.
+- `len`: Get the total number of unit variants in the enum (excluding the "other" variant if present).
+- `values`: Returns an iterator over all unit variants of the enum.
 
-## Limitations
+## Supported Enum Types
 
-- Applicable only to enums with unit variants.
-- Enums with data-carrying or tuple variants are not supported and will result in a compile-time error.
+The macro supports two types of enums:
+1. Enums with only unit variants
+2. Enums with unit variants plus one "other" variant for handling undefined discriminant values
 
 ## Installation
 
@@ -28,6 +29,8 @@ unit-enum = "1.4.0"
 ```
 
 ## Quick Start
+
+### Basic Usage (Unit Variants Only)
 
 ```rust
 use unit_enum::UnitEnum;
@@ -59,7 +62,7 @@ fn main() {
     assert_eq!(Color::from_discriminant(10), Some(Color::Red));
     assert_eq!(Color::from_discriminant(0), None);
 
-    // Get the total number of variants
+    // Get the total number of unit variants
     assert_eq!(Color::len(), 3);
 
     // Iterate over all variants
@@ -70,13 +73,47 @@ fn main() {
 }
 ```
 
+### Usage with "Other" Variant
+
+```rust
+use unit_enum::UnitEnum;
+
+#[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
+#[repr(u16)]  // repr attribute is required when using an "other" variant
+enum Status {
+    Active = 1,
+    Inactive = 2,
+    #[unit_enum(other)]
+    Unknown(u16),  // type must match repr
+}
+
+fn main() {
+    // from_discriminant always returns a value when "other" variant is present
+    assert_eq!(Status::from_discriminant(1), Status::Active);
+    assert_eq!(Status::from_discriminant(42), Status::Unknown(42));
+
+    // ordinal treats "other" as the last variant
+    assert_eq!(Status::Active.ordinal(), 0);
+    assert_eq!(Status::Unknown(42).ordinal(), 2);
+
+    // len returns only the number of unit variants
+    assert_eq!(Status::len(), 2);
+
+    // values iterates only over unit variants
+    assert_eq!(
+        Status::values().collect::<Vec<_>>(),
+        vec![Status::Active, Status::Inactive]
+    );
+}
+```
+
 ## Discriminant Types
 
 The crate respects the enum's `#[repr]` attribute to determine the type of discriminant values. Supported types include:
 - `#[repr(i8)]`, `#[repr(i16)]`, `#[repr(i32)]`, `#[repr(i64)]`, `#[repr(i128)]`
 - `#[repr(u8)]`, `#[repr(u16)]`, `#[repr(u32)]`, `#[repr(u64)]`, `#[repr(u128)]`
 
-If no `#[repr]` attribute is specified, the discriminant type defaults to `i32`.
+If no `#[repr]` attribute is specified, the discriminant type defaults to `i32`. Note that when using an "other" variant, the `#[repr]` attribute is required and must match the type of the "other" variant's field.
 
 ```rust
 #[derive(UnitEnum)]
@@ -92,9 +129,18 @@ enum SmallEnum {
 enum LargeEnum {
     A = -1_000_000,
     B = 5_000_000,
-    C = 1_000_000_000
+    #[unit_enum(other)]
+    Other(i64)  // type matches repr
 }
 ```
+
+## Requirements for "Other" Variant
+
+When using an "other" variant, the following requirements must be met:
+- The enum must have a `#[repr(type)]` attribute
+- Only one variant can be marked with `#[unit_enum(other)]`
+- The "other" variant must have exactly one unnamed field matching the repr type
+- All other variants must be unit variants
 
 ## Contributing
 

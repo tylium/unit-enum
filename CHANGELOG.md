@@ -1,6 +1,7 @@
 # Unreleased
 
 - Support for #[repr(type)]
+- Support for Other variant
 
 # Version 1.3.0 (2024-07-15)
 
