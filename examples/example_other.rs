@@ -1,10 +1,14 @@
 use unit_enum::UnitEnum;
 
 #[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
+#[repr(u32)]
 enum Color {
     Red = 10,
     Green,
     Blue = 45654,
+
+    #[unit_enum(other)]
+    Other(u32),
 }
 
 fn main() {
@@ -23,8 +27,8 @@ fn main() {
     assert_eq!(Color::Green.discriminant(), 11);
 
     // Convert from discriminant back to variant
-    assert_eq!(Color::from_discriminant(10), Some(Color::Red));
-    assert_eq!(Color::from_discriminant(0), None);
+    assert_eq!(Color::from_discriminant(10), Color::Red);
+    assert_eq!(Color::from_discriminant(0), Color::Other(0));
 
     // Get the total number of variants
     assert_eq!(Color::len(), 3);
