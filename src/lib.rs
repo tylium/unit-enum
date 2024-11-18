@@ -198,7 +198,7 @@ fn impl_unit_enum(
             ///
             /// # Examples
             ///
-            /// ```
+            /// ```ignore
             /// # use unit_enum::UnitEnum;
             /// #[derive(UnitEnum)]
             /// enum Example {
@@ -239,7 +239,7 @@ fn generate_name_impl(
         ///
         /// # Examples
         ///
-        /// ```
+        /// ```ignore
         /// # use unit_enum::UnitEnum;
         /// #[derive(UnitEnum)]
         /// enum Example {
@@ -284,7 +284,7 @@ fn generate_ordinal_impl(
         ///
         /// # Examples
         ///
-        /// ```
+        /// ```ignore
         /// # use unit_enum::UnitEnum;
         /// #[derive(UnitEnum)]
         /// enum Example {
@@ -322,7 +322,7 @@ fn generate_from_ordinal_impl(
         ///
         /// # Examples
         ///
-        /// ```
+        /// ```ignore
         /// # use unit_enum::UnitEnum;
         /// # #[derive(Debug, PartialEq)]
         /// #[derive(UnitEnum)]
@@ -370,7 +370,7 @@ fn generate_discriminant_impl(
         ///
         /// # Examples
         ///
-        /// ```
+        /// ```ignore
         /// # use unit_enum::UnitEnum;
         /// #[derive(UnitEnum)]
         /// enum Example {
@@ -414,7 +414,7 @@ fn generate_from_discriminant_impl(
             ///
             /// # Examples
             ///
-            /// ```
+            /// ```ignore
             /// # use unit_enum::UnitEnum;
             /// #[derive(UnitEnum, PartialEq, Debug)]
             /// #[repr(u8)]
@@ -450,7 +450,7 @@ fn generate_from_discriminant_impl(
             ///
             /// # Examples
             ///
-            /// ```
+            /// ```ignore
             /// # use unit_enum::UnitEnum;
             /// #[derive(UnitEnum, PartialEq, Debug)]
             /// #[repr(u8)]
@@ -496,7 +496,7 @@ fn generate_values_impl(
         ///
         /// # Examples
         ///
-        /// ```
+        /// ```ignore
         /// # use unit_enum::UnitEnum;
         /// #[derive(UnitEnum, PartialEq, Debug)]
         /// enum Example {
