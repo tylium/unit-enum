@@ -1,4 +1,8 @@
-# UnitEnum Crate Documentation
+# unit-enum
+
+[![Crates.io](https://img.shields.io/crates/v/unit-enum.svg)](https://crates.io/crates/unit-enum)
+[![Documentation](https://docs.rs/unit-enum/badge.svg)](https://docs.rs/unit-enum)
+[![License](https://img.shields.io/badge/license-MIT%2FApache--2.0-blue.svg)](README.md#license)
 
 The `unit-enum` crate provides a procedural macro `UnitEnum` designed to enhance enums in Rust, particularly those
 consisting of unit variants. This macro simplifies working with such enums by providing useful utility methods.
