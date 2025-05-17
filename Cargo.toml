@@ -1,6 +1,6 @@
 [package]
 name = "unit-enum"
-version = "1.4.1"
+version = "1.4.2"
 authors = ["Renaud Denis <mail@renauddenis.com>"]
 description = "A procedural macro for deriving ordinal methods in unit-like enums for Rust."
 license = "MIT OR Apache-2.0"
@@ -16,4 +16,3 @@ proc-macro = true
 quote = "1"
 proc-macro2 = "1"
 syn = { version = "2", features = ["full"] }
-
