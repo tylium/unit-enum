@@ -1,0 +1,59 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
+
+  publish:
+    name: Publish to crates.io
+    needs: build
+    runs-on: ubuntu-latest
+    # Only run on pushes to main branch, not on pull requests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      # Setup Rust toolchain
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      # Check if version has changed compared to the published version
+      - name: Check version
+        id: check-version
+        run: |
+          CURRENT_VERSION=$(grep -m 1 "version" Cargo.toml | sed -E 's/version = "(.*)"/\1/')
+          PUBLISHED_VERSION=$(cargo search unit-enum --limit 1 | grep -m 1 "unit-enum" | sed -E 's/unit-enum = "(.*)"/\1/' || echo "0.0.0")
+
+          if [ "$CURRENT_VERSION" != "$PUBLISHED_VERSION" ]; then
+            echo "Version changed from $PUBLISHED_VERSION to $CURRENT_VERSION"
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "Version unchanged: $CURRENT_VERSION"
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Publish to crates.io if version has changed
+      - name: Publish to crates.io
+        if: steps.check-version.outputs.version_changed == 'true'
+        uses: actions-rs/cargo@v1
+        with:
+          command: publish
+          args: --token ${{ secrets.CRATES_IO_TOKEN }}
