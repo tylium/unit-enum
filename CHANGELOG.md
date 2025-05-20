@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Fixed
+
+- Removed unnecessary type casts that were causing clippy warnings
+
 ## Version 1.4.2 (2025-05-17)
 
 ### Added

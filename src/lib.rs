@@ -355,7 +355,7 @@ fn generate_discriminant_impl(
 ) -> proc_macro2::TokenStream {
     let unit_match_arms = unit_variants.iter().zip(discriminants).map(|(variant, discriminant)| {
         let variant_name = &variant.ident;
-        quote! { #name::#variant_name => #discriminant as #discriminant_type }
+        quote! { #name::#variant_name => #discriminant }
     });
 
     let other_arm = other_variant.as_ref().map(|(variant, _)| {
@@ -402,7 +402,7 @@ fn generate_from_discriminant_impl(
     if let Some((other_variant, _)) = other_variant {
         let match_arms = unit_variants.iter().zip(discriminants).map(|(variant, discriminant)| {
             let variant_name = &variant.ident;
-            quote! { x if x == (#discriminant as #discriminant_type) => #name::#variant_name }
+            quote! { x if x == #discriminant => #name::#variant_name }
         });
 
         let other_name = &other_variant.ident;
@@ -439,7 +439,7 @@ fn generate_from_discriminant_impl(
     } else {
         let match_arms = unit_variants.iter().zip(discriminants).map(|(variant, discriminant)| {
             let variant_name = &variant.ident;
-            quote! { x if x == (#discriminant as #discriminant_type) => Some(#name::#variant_name) }
+            quote! { x if x == #discriminant => Some(#name::#variant_name) }
         });
 
         quote! {
@@ -481,7 +481,7 @@ fn generate_values_impl(
     _other_variant: &Option<(&Variant, Type)>,
 ) -> proc_macro2::TokenStream {
     // Create a vector of variant expressions paired with their discriminants
-    let variant_exprs = unit_variants.iter().zip(discriminants).map(|(variant, discriminant)| {
+    let variant_exprs = unit_variants.iter().zip(discriminants).map(|(variant, _discriminant)| {
         let variant_name = &variant.ident;
         quote! {
             #name::#variant_name // The variant
