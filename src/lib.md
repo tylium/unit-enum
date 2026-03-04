@@ -44,6 +44,34 @@ assert_eq!(
 );
 ```
 
+## Const-friendly methods
+
+Because all enum information is known at compile time, most of the generated
+methods are available as `const fn` and can be used in constant contexts.
+
+```rust
+use unit_enum::UnitEnum;
+
+#[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
+enum Status {
+    Active = 1,
+    Pending,    // 2
+    Inactive = 5,
+}
+
+const STATUS_COUNT: usize = Status::len();
+const FIRST_NAME: &str = Status::Active.name();
+const FROM_ORDINAL: Option<Status> = Status::from_ordinal(1);
+const FROM_DISCRIMINANT: Option<Status> = Status::from_discriminant(1);
+
+fn main() {
+    assert_eq!(STATUS_COUNT, 3);
+    assert_eq!(FIRST_NAME, "Active");
+    assert_eq!(FROM_ORDINAL, Some(Status::Pending));
+    assert_eq!(FROM_DISCRIMINANT, Some(Status::Active));
+}
+```
+
 ## Usage with "Other" Variant
 
 The macro also supports enums with an additional "other" variant for handling undefined discriminant values:
@@ -112,6 +140,11 @@ Supported types include:
 
 If no `#[repr]` is specified, `i32` is used by default. Note that when using an "other" variant,
 the `#[repr]` attribute is required and must match the type of the "other" variant's field.
+
+## Minimum Supported Rust Version (MSRV)
+
+This crate supports **Rust 1.71+**.
+All const-friendly methods described above are available on this MSRV.
 
 ## Requirements
 

@@ -1,0 +1,19 @@
+style_edition = "2021"
+max_width = 120
+
+group_imports = "StdExternalCrate"
+
+normalize_doc_attributes = true
+normalize_comments = true
+wrap_comments = true
+
+reorder_modules = false
+
+reorder_impl_items = true
+
+where_single_line = true
+fn_params_layout = "Compressed"
+fn_single_line = true
+
+use_field_init_shorthand = true
+use_try_shorthand = true

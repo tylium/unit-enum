@@ -2,8 +2,7 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, Data, DeriveInput, Error, Expr, Fields
-          , Type, Variant};
+use syn::{parse_macro_input, Data, DeriveInput, Error, Expr, Fields, Type, Variant};
 
 /// Derives the `UnitEnum` trait for an enum.
 ///
@@ -122,7 +121,8 @@ fn validate_and_process(ast: &DeriveInput) -> Result<(Type, Vec<&Variant>, Optio
 }
 
 fn get_discriminant_type(ast: &DeriveInput) -> Result<Type, Error> {
-    ast.attrs.iter()
+    ast.attrs
+        .iter()
         .find(|attr| attr.path().is_ident("repr"))
         .map_or(Ok(syn::parse_quote!(i32)), |attr| {
             attr.parse_args::<Type>()
@@ -136,14 +136,16 @@ fn has_unit_enum_attr(variant: &Variant) -> bool {
 
 fn has_unit_enum_other_attr(variant: &Variant) -> bool {
     variant.attrs.iter().any(|attr| {
-        attr.path().is_ident("unit_enum") &&
-            attr.parse_nested_meta(|meta| {
-                if meta.path.is_ident("other") {
-                    Ok(())
-                } else {
-                    Err(meta.error("Invalid unit_enum attribute"))
-                }
-            }).is_ok()
+        attr.path().is_ident("unit_enum")
+            && attr
+                .parse_nested_meta(|meta| {
+                    if meta.path.is_ident("other") {
+                        Ok(())
+                    } else {
+                        Err(meta.error("Invalid unit_enum attribute"))
+                    }
+                })
+                .is_ok()
     })
 }
 
@@ -152,10 +154,11 @@ fn compute_discriminants(variants: &[&Variant]) -> Vec<Expr> {
     let mut last_discriminant: Option<Expr> = None;
 
     for variant in variants {
-        let discriminant = variant.discriminant.as_ref().map(|(_, expr)| expr.clone())
-            .or_else(|| {
-                last_discriminant.clone().map(|expr| syn::parse_quote! { #expr + 1 })
-            })
+        let discriminant = variant
+            .discriminant
+            .as_ref()
+            .map(|(_, expr)| expr.clone())
+            .or_else(|| last_discriminant.clone().map(|expr| syn::parse_quote! { #expr + 1 }))
             .unwrap_or_else(|| syn::parse_quote! { 0 });
 
         discriminants.push(discriminant.clone());
@@ -166,10 +169,7 @@ fn compute_discriminants(variants: &[&Variant]) -> Vec<Expr> {
 }
 
 fn impl_unit_enum(
-    ast: &DeriveInput,
-    discriminant_type: &Type,
-    unit_variants: &[&Variant],
-    other_variant: Option<(&Variant, Type)>,
+    ast: &DeriveInput, discriminant_type: &Type, unit_variants: &[&Variant], other_variant: Option<(&Variant, Type)>,
 ) -> TokenStream {
     let name = &ast.ident;
     let num_variants = unit_variants.len();
@@ -178,8 +178,10 @@ fn impl_unit_enum(
     let name_impl = generate_name_impl(name, unit_variants, &other_variant);
     let ordinal_impl = generate_ordinal_impl(name, unit_variants, &other_variant, num_variants);
     let from_ordinal_impl = generate_from_ordinal_impl(name, unit_variants);
-    let discriminant_impl = generate_discriminant_impl(name, unit_variants, &other_variant, discriminant_type, &discriminants);
-    let from_discriminant_impl = generate_from_discriminant_impl(name, unit_variants, &other_variant, discriminant_type, &discriminants);
+    let discriminant_impl =
+        generate_discriminant_impl(name, unit_variants, &other_variant, discriminant_type, &discriminants);
+    let from_discriminant_impl =
+        generate_from_discriminant_impl(name, unit_variants, &other_variant, discriminant_type, &discriminants);
     let values_impl = generate_values_impl(name, unit_variants, &discriminants, &other_variant);
 
     quote! {
@@ -210,19 +212,18 @@ fn impl_unit_enum(
             ///
             /// assert_eq!(Example::len(), 2);
             /// ```
-            pub fn len() -> usize {
+            pub const fn len() -> usize {
                 #num_variants
             }
 
             #values_impl
         }
-    }.into()
+    }
+    .into()
 }
 
 fn generate_name_impl(
-    name: &syn::Ident,
-    unit_variants: &[&Variant],
-    other_variant: &Option<(&Variant, Type)>,
+    name: &syn::Ident, unit_variants: &[&Variant], other_variant: &Option<(&Variant, Type)>,
 ) -> proc_macro2::TokenStream {
     let unit_match_arms = unit_variants.iter().map(|variant| {
         let variant_name = &variant.ident;
@@ -252,7 +253,7 @@ fn generate_name_impl(
         /// assert_eq!(Example::B.name(), "B");
         /// assert_eq!(Example::C.name(), "C");
         /// ```
-        pub fn name(&self) -> &str {
+        pub const fn name(&self) -> &str {
             match self {
                 #(#unit_match_arms,)*
                 #other_arm
@@ -262,10 +263,7 @@ fn generate_name_impl(
 }
 
 fn generate_ordinal_impl(
-    name: &syn::Ident,
-    unit_variants: &[&Variant],
-    other_variant: &Option<(&Variant, Type)>,
-    num_variants: usize,
+    name: &syn::Ident, unit_variants: &[&Variant], other_variant: &Option<(&Variant, Type)>, num_variants: usize,
 ) -> proc_macro2::TokenStream {
     let unit_match_arms = unit_variants.iter().enumerate().map(|(index, variant)| {
         let variant_name = &variant.ident;
@@ -297,7 +295,7 @@ fn generate_ordinal_impl(
         /// assert_eq!(Example::B.ordinal(), 1);
         /// assert_eq!(Example::C.ordinal(), 2);
         /// ```
-        pub fn ordinal(&self) -> usize {
+        pub const fn ordinal(&self) -> usize {
             match self {
                 #(#unit_match_arms,)*
                 #other_arm
@@ -305,10 +303,7 @@ fn generate_ordinal_impl(
         }
     }
 }
-fn generate_from_ordinal_impl(
-    name: &syn::Ident,
-    unit_variants: &[&Variant],
-) -> proc_macro2::TokenStream {
+fn generate_from_ordinal_impl(name: &syn::Ident, unit_variants: &[&Variant]) -> proc_macro2::TokenStream {
     let match_arms = unit_variants.iter().enumerate().map(|(index, variant)| {
         let variant_name = &variant.ident;
         quote! { #index => Some(#name::#variant_name) }
@@ -337,7 +332,7 @@ fn generate_from_ordinal_impl(
         /// assert_eq!(Example::from_ordinal(2), None); // Other variant
         /// assert_eq!(Example::from_ordinal(99), None); // Out of range
         /// ```
-        pub fn from_ordinal(ord: usize) -> Option<Self> {
+        pub const fn from_ordinal(ord: usize) -> Option<Self> {
             match ord {
                 #(#match_arms,)*
                 _ => None
@@ -347,10 +342,7 @@ fn generate_from_ordinal_impl(
 }
 
 fn generate_discriminant_impl(
-    name: &syn::Ident,
-    unit_variants: &[&Variant],
-    other_variant: &Option<(&Variant, Type)>,
-    discriminant_type: &Type,
+    name: &syn::Ident, unit_variants: &[&Variant], other_variant: &Option<(&Variant, Type)>, discriminant_type: &Type,
     discriminants: &[Expr],
 ) -> proc_macro2::TokenStream {
     let unit_match_arms = unit_variants.iter().zip(discriminants).map(|(variant, discriminant)| {
@@ -383,7 +375,7 @@ fn generate_discriminant_impl(
         /// assert_eq!(Example::B.discriminant(), 10);
         /// assert_eq!(Example::C.discriminant(), 11);
         /// ```
-         pub fn discriminant(&self) -> #discriminant_type {
+         pub const fn discriminant(&self) -> #discriminant_type {
             match self {
                 #(#unit_match_arms,)*
                 #other_arm
@@ -393,10 +385,7 @@ fn generate_discriminant_impl(
 }
 
 fn generate_from_discriminant_impl(
-    name: &syn::Ident,
-    unit_variants: &[&Variant],
-    other_variant: &Option<(&Variant, Type)>,
-    discriminant_type: &Type,
+    name: &syn::Ident, unit_variants: &[&Variant], other_variant: &Option<(&Variant, Type)>, discriminant_type: &Type,
     discriminants: &[Expr],
 ) -> proc_macro2::TokenStream {
     if let Some((other_variant, _)) = other_variant {
@@ -429,7 +418,7 @@ fn generate_from_discriminant_impl(
             /// assert_eq!(Example::from_discriminant(10), Example::B);
             /// assert_eq!(Example::from_discriminant(42), Example::Other(42));
             /// ```
-            pub fn from_discriminant(discr: #discriminant_type) -> Self {
+            pub const fn from_discriminant(discr: #discriminant_type) -> Self {
                 match discr {
                     #(#match_arms,)*
                     other => #name::#other_name(other)
@@ -464,7 +453,7 @@ fn generate_from_discriminant_impl(
             /// assert_eq!(Example::from_discriminant(10), Some(Example::B));
             /// assert_eq!(Example::from_discriminant(42), None);
             /// ```
-            pub fn from_discriminant(discr: #discriminant_type) -> Option<Self> {
+            pub const fn from_discriminant(discr: #discriminant_type) -> Option<Self> {
                 match discr {
                     #(#match_arms,)*
                     _ => None
@@ -475,10 +464,7 @@ fn generate_from_discriminant_impl(
 }
 
 fn generate_values_impl(
-    name: &syn::Ident,
-    unit_variants: &[&Variant],
-    discriminants: &[Expr],
-    _other_variant: &Option<(&Variant, Type)>,
+    name: &syn::Ident, unit_variants: &[&Variant], discriminants: &[Expr], _other_variant: &Option<(&Variant, Type)>,
 ) -> proc_macro2::TokenStream {
     // Create a vector of variant expressions paired with their discriminants
     let variant_exprs = unit_variants.iter().zip(discriminants).map(|(variant, _discriminant)| {
