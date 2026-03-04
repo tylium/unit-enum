@@ -11,10 +11,18 @@ env:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        rust: ["1.71.0", "stable"]
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
+    - name: Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust }}
+        override: true
     - name: Build
       run: cargo build --verbose
     - name: Run tests

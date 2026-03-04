@@ -20,6 +20,7 @@ consisting of unit variants. This macro simplifies working with such enums by pr
 ## Supported Enum Types
 
 The macro supports two types of enums:
+
 1. Enums with only unit variants
 2. Enums with unit variants plus one "other" variant for handling undefined discriminant values
 
@@ -31,6 +32,10 @@ Add the following to your `Cargo.toml`:
 [dependencies]
 unit-enum = "1.4.1"
 ```
+
+## Minimum Supported Rust Version (MSRV)
+
+This crate supports **Rust 1.71+**.
 
 ## Quick Start
 
@@ -77,6 +82,34 @@ fn main() {
 }
 ```
 
+### Const-friendly methods
+
+Because all enum information is known at compile time, most of the generated
+methods are available as `const fn` and can be used in constant contexts.
+
+```rust
+use unit_enum::UnitEnum;
+
+#[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
+enum Status {
+    Active = 1,
+    Pending,    // 2
+    Inactive = 5,
+}
+
+const STATUS_COUNT: usize = Status::len();
+const FIRST_NAME: &str = Status::Active.name();
+const FROM_ORDINAL: Option<Status> = Status::from_ordinal(1);
+const FROM_DISCRIMINANT: Option<Status> = Status::from_discriminant(1);
+
+fn main() {
+    assert_eq!(STATUS_COUNT, 3);
+    assert_eq!(FIRST_NAME, "Active");
+    assert_eq!(FROM_ORDINAL, Some(Status::Pending));
+    assert_eq!(FROM_DISCRIMINANT, Some(Status::Active));
+}
+```
+
 ### Usage with "Other" Variant
 
 ```rust
@@ -114,6 +147,7 @@ fn main() {
 ## Discriminant Types
 
 The crate respects the enum's `#[repr]` attribute to determine the type of discriminant values. Supported types include:
+
 - `#[repr(i8)]`, `#[repr(i16)]`, `#[repr(i32)]`, `#[repr(i64)]`, `#[repr(i128)]`
 - `#[repr(u8)]`, `#[repr(u16)]`, `#[repr(u32)]`, `#[repr(u64)]`, `#[repr(u128)]`
 
@@ -141,6 +175,7 @@ enum LargeEnum {
 ## Requirements for "Other" Variant
 
 When using an "other" variant, the following requirements must be met:
+
 - The enum must have a `#[repr(type)]` attribute
 - Only one variant can be marked with `#[unit_enum(other)]`
 - The "other" variant must have exactly one unnamed field matching the repr type

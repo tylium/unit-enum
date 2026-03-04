@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Next
+
+### Added
+
+- Make `name`, `ordinal`, `from_ordinal`, `discriminant`, `from_discriminant`, and `len` const-friendly by generating them as `const fn`
+- Document the minimum supported Rust version (MSRV) as Rust 1.71 and add a section describing const usage in the documentation
+
 ## Version 1.4.3 (2025-05-20)
 
 ### Fixed
