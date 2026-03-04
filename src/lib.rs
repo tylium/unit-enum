@@ -210,7 +210,7 @@ fn impl_unit_enum(
             ///
             /// assert_eq!(Example::len(), 2);
             /// ```
-            pub fn len() -> usize {
+            pub const fn len() -> usize {
                 #num_variants
             }
 
@@ -252,7 +252,7 @@ fn generate_name_impl(
         /// assert_eq!(Example::B.name(), "B");
         /// assert_eq!(Example::C.name(), "C");
         /// ```
-        pub fn name(&self) -> &str {
+        pub const fn name(&self) -> &str {
             match self {
                 #(#unit_match_arms,)*
                 #other_arm
@@ -297,7 +297,7 @@ fn generate_ordinal_impl(
         /// assert_eq!(Example::B.ordinal(), 1);
         /// assert_eq!(Example::C.ordinal(), 2);
         /// ```
-        pub fn ordinal(&self) -> usize {
+        pub const fn ordinal(&self) -> usize {
             match self {
                 #(#unit_match_arms,)*
                 #other_arm
@@ -337,7 +337,7 @@ fn generate_from_ordinal_impl(
         /// assert_eq!(Example::from_ordinal(2), None); // Other variant
         /// assert_eq!(Example::from_ordinal(99), None); // Out of range
         /// ```
-        pub fn from_ordinal(ord: usize) -> Option<Self> {
+        pub const fn from_ordinal(ord: usize) -> Option<Self> {
             match ord {
                 #(#match_arms,)*
                 _ => None
@@ -383,7 +383,7 @@ fn generate_discriminant_impl(
         /// assert_eq!(Example::B.discriminant(), 10);
         /// assert_eq!(Example::C.discriminant(), 11);
         /// ```
-         pub fn discriminant(&self) -> #discriminant_type {
+         pub const fn discriminant(&self) -> #discriminant_type {
             match self {
                 #(#unit_match_arms,)*
                 #other_arm
@@ -429,7 +429,7 @@ fn generate_from_discriminant_impl(
             /// assert_eq!(Example::from_discriminant(10), Example::B);
             /// assert_eq!(Example::from_discriminant(42), Example::Other(42));
             /// ```
-            pub fn from_discriminant(discr: #discriminant_type) -> Self {
+            pub const fn from_discriminant(discr: #discriminant_type) -> Self {
                 match discr {
                     #(#match_arms,)*
                     other => #name::#other_name(other)
@@ -464,7 +464,7 @@ fn generate_from_discriminant_impl(
             /// assert_eq!(Example::from_discriminant(10), Some(Example::B));
             /// assert_eq!(Example::from_discriminant(42), None);
             /// ```
-            pub fn from_discriminant(discr: #discriminant_type) -> Option<Self> {
+            pub const fn from_discriminant(discr: #discriminant_type) -> Option<Self> {
                 match discr {
                     #(#match_arms,)*
                     _ => None

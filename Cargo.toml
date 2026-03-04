@@ -8,6 +8,7 @@ repository = "https://github.com/tylium/unit-enum"
 keywords = ["enum", "derive", "proc_macro", "procmacro"]
 edition = "2021"
 readme = "README.md"
+rust-version = "1.56"
 
 [lib]
 proc-macro = true
