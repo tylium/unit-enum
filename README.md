@@ -30,7 +30,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-unit-enum = "1.4.1"
+unit-enum = "1"
 ```
 
 ## Minimum Supported Rust Version (MSRV)
