@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This repository contains the `unit-enum` Rust crate, a procedural macro (`#[derive(UnitEnum)]`) for enums that are primarily composed of unit variants. It generates utility methods such as `name`, `ordinal`, `from_ordinal`, `discriminant`, `from_discriminant`, `len`, and `values`, while respecting the enum's `#[repr]` and optionally supporting a single `"other"` catch‑all variant.
+This repository contains the `unit-enum` Rust crate, a procedural macro (`#[derive(UnitEnum)]`) for enums that are primarily composed of unit variants. It generates utility methods such as `name`, `ordinal`, `from_ordinal`, `discriminant`, `from_discriminant`, `len`, and `values`, plus a `VALUES` constant, while respecting the enum's `#[repr]` and optionally supporting a single `"other"` catch‑all variant.
 
 ## File Structure and Organization
 
@@ -12,7 +12,10 @@ This repository contains the `unit-enum` Rust crate, a procedural macro (`#[deri
 - **src/lib.rs**: Implementation of the `UnitEnum` derive macro and its validation / codegen logic.
 - **src/lib.md**: Crate-level Rustdoc included into the library docs; keep examples and text in sync with `README.md`.
 - **examples/**: Small runnable binaries (`example.rs`, `example_other.rs`) that demonstrate typical usage, including the optional `"other"` variant.
-- **tests/**: Integration tests for generated code (`discriminants.rs`: discriminant computation, checked against the compiler's `as` casts).
+- **tests/**: Integration tests for generated code:
+  - `discriminants.rs`: discriminant computation (checked against the compiler's `as` casts) and `repr` handling.
+  - `methods.rs`: generated methods and `VALUES`.
+  - `hygiene.rs`: `#![no_std]` crate that shadows prelude names; generated code must compile there.
 - **.github/workflows/rust.yml**: GitHub Actions workflow for CI (build/tests).
 - **CHANGELOG.md**: Human-maintained change log; follow existing style when documenting externally visible changes.
 - **LICENSE-MIT**, **LICENSE-APACHE**: Dual licensing information.
@@ -32,6 +35,7 @@ This repository contains the `unit-enum` Rust crate, a procedural macro (`#[deri
 ### Rust & Testing
 
 - Use `cargo test` (and, if relevant, `cargo test --examples`) to validate changes; this runs doctests in `src/lib.md` and `README.md` as well as the integration tests in `tests/`.
+- Generated code must use fully qualified paths (`::core::...`) and must not need `std` or `alloc`.
 - Add regression tests for macro bugs to `tests/`; for unit-only enums, compare generated values with `Variant as Repr`.
 - Prefer adding or updating doctests and examples when fixing bugs or changing behavior in the derive macro.
 - Avoid introducing public API changes without updating documentation and, when applicable, bumping versions and changelog entries in coordination with maintainers.

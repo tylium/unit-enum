@@ -79,3 +79,46 @@ fn implicit_discriminants_in_const_context() {
     assert_eq!(D, 9);
     assert_eq!(FROM_D, Some(Flags::D));
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
+#[repr(C)]
+enum ReprC {
+    A,
+    B = 5,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
+#[repr(C, u8)]
+enum ReprCWithInteger {
+    A,
+    #[unit_enum(other)]
+    Other(u8),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
+#[repr(C)]
+#[repr(u16)]
+enum SplitRepr {
+    A,
+    #[unit_enum(other)]
+    Other(u16),
+}
+
+#[test]
+fn repr_hints_without_integer_type_default_to_i32() {
+    let discriminant: i32 = ReprC::B.discriminant();
+
+    assert_eq!(discriminant, ReprC::B as i32);
+    assert_eq!(ReprC::from_discriminant(5), Some(ReprC::B));
+}
+
+#[test]
+fn integer_type_is_found_among_repr_hints() {
+    let combined: u8 = ReprCWithInteger::Other(7).discriminant();
+    let split: u16 = SplitRepr::Other(7).discriminant();
+
+    assert_eq!(combined, 7);
+    assert_eq!(split, 7);
+    assert_eq!(ReprCWithInteger::from_discriminant(0), ReprCWithInteger::A);
+    assert_eq!(SplitRepr::from_discriminant(0), SplitRepr::A);
+}

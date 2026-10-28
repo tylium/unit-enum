@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Next
+
+### Added
+
+- Add a `VALUES` associated constant holding all unit variants in declaration order, usable in const contexts (e.g. `const ALL: [Status; Status::len()] = Status::VALUES;`)
+- Support `#![no_std]` crates: generated code only depends on `core`
+
+### Changed
+
+- `name()` now returns `&'static str` instead of a `&str` borrowed from `self`
+- `values()` iterates over `VALUES` instead of allocating a `Vec`
+
+### Fixed
+
+- Ignore `repr` hints that are not integer types, such as `C`: `#[repr(C)]` now uses `i32` and `#[repr(C, u8)]` (or separate `#[repr(C)]` and `#[repr(u8)]` attributes) uses `u8`, instead of failing to compile
+- Use fully qualified paths in generated code so it compiles when names such as `Option`, `Some`, `None`, `Iterator` or `stringify!` are shadowed
+
 ## Version 1.5.1 (2026-10-28)
 
 ### Fixed
