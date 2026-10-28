@@ -45,7 +45,7 @@ This crate supports **Rust 1.71+**.
 use unit_enum::UnitEnum;
 
 #[derive(Debug, Clone, Copy, PartialEq, UnitEnum)]
-#[repr(i16)]  // Specify the discriminant type (optional, defaults to i32)
+#[repr(u16)]  // Specify the discriminant type (optional, defaults to i32)
 enum Color {
     Red = 10,
     Green,     // 11
@@ -154,6 +154,8 @@ The crate respects the enum's `#[repr]` attribute to determine the type of discr
 If no `#[repr]` attribute is specified, the discriminant type defaults to `i32`. Note that when using an "other" variant, the `#[repr]` attribute is required and must match the type of the "other" variant's field.
 
 ```rust
+use unit_enum::UnitEnum;
+
 #[derive(UnitEnum)]
 #[repr(u8)]  // Use u8 for discriminants
 enum SmallEnum {

@@ -4,6 +4,11 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{parse_macro_input, Data, DeriveInput, Error, Expr, Fields, Type, Variant};
 
+// Compile and run the README examples as doctests so they stay in sync with the crate
+#[cfg(doctest)]
+#[doc = include_str!("../README.md")]
+struct ReadmeDoctests;
+
 /// Derives the `UnitEnum` trait for an enum.
 ///
 /// This macro can be used on enums with unit variants (no fields) and optionally one "other" variant
@@ -151,18 +156,28 @@ fn has_unit_enum_other_attr(variant: &Variant) -> bool {
 
 fn compute_discriminants(variants: &[&Variant]) -> Vec<Expr> {
     let mut discriminants = Vec::with_capacity(variants.len());
-    let mut last_discriminant: Option<Expr> = None;
+    // Last explicit discriminant expression, and how many implicit variants followed it
+    let mut base: Option<&Expr> = None;
+    let mut offset: usize = 0;
 
     for variant in variants {
-        let discriminant = variant
-            .discriminant
-            .as_ref()
-            .map(|(_, expr)| expr.clone())
-            .or_else(|| last_discriminant.clone().map(|expr| syn::parse_quote! { #expr + 1 }))
-            .unwrap_or_else(|| syn::parse_quote! { 0 });
+        let discriminant = if let Some((_, expr)) = &variant.discriminant {
+            base = Some(expr);
+            offset = 0;
+            expr.clone()
+        } else if let Some(expr) = base {
+            offset += 1;
+            // Parenthesize the base so operators like `<<` or `|` keep their meaning: `(1 << 3) + 1`
+            let offset = proc_macro2::Literal::usize_unsuffixed(offset);
+            syn::parse_quote! { (#expr) + #offset }
+        } else {
+            // No explicit discriminant yet: variants count up from 0
+            let value = proc_macro2::Literal::usize_unsuffixed(offset);
+            offset += 1;
+            syn::parse_quote! { #value }
+        };
 
-        discriminants.push(discriminant.clone());
-        last_discriminant = Some(discriminant);
+        discriminants.push(discriminant);
     }
 
     discriminants
