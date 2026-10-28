@@ -47,7 +47,8 @@ assert_eq!(
 ## Const-friendly methods
 
 Because all enum information is known at compile time, most of the generated
-methods are available as `const fn` and can be used in constant contexts.
+methods are available as `const fn` and can be used in constant contexts, along
+with the `VALUES` array of all unit variants.
 
 ```rust
 use unit_enum::UnitEnum;
@@ -63,12 +64,14 @@ const STATUS_COUNT: usize = Status::len();
 const FIRST_NAME: &str = Status::Active.name();
 const FROM_ORDINAL: Option<Status> = Status::from_ordinal(1);
 const FROM_DISCRIMINANT: Option<Status> = Status::from_discriminant(1);
+const ALL: [Status; Status::len()] = Status::VALUES;
 
 fn main() {
     assert_eq!(STATUS_COUNT, 3);
     assert_eq!(FIRST_NAME, "Active");
     assert_eq!(FROM_ORDINAL, Some(Status::Pending));
     assert_eq!(FROM_DISCRIMINANT, Some(Status::Active));
+    assert_eq!(ALL, [Status::Active, Status::Pending, Status::Inactive]);
 }
 ```
 
@@ -110,6 +113,7 @@ The `UnitEnum` derive macro provides the following methods:
 - [`from_discriminant()`](#method.from_discriminant): Convert a discriminant to a variant
 - [`len()`](#method.len): Get the total number of unit variants
 - [`values()`](#method.values): Get an iterator over all unit variants
+- `VALUES`: A constant array of all unit variants
 
 ## Discriminant Types
 
@@ -135,16 +139,21 @@ enum Large {
 ```
 
 Supported types include:
-- `i8`, `i16`, `i32`, `i64`, `i128`
-- `u8`, `u16`, `u32`, `u64`, `u128`
+- `i8`, `i16`, `i32`, `i64`, `i128`, `isize`
+- `u8`, `u16`, `u32`, `u64`, `u128`, `usize`
 
-If no `#[repr]` is specified, `i32` is used by default. Note that when using an "other" variant,
+If no integer `#[repr]` is specified, `i32` is used by default. Other hints are ignored for this purpose:
+`#[repr(C)]` uses `i32`, and `#[repr(C, u8)]` uses `u8`. Note that when using an "other" variant,
 the `#[repr]` attribute is required and must match the type of the "other" variant's field.
 
 ## Minimum Supported Rust Version (MSRV)
 
 This crate supports **Rust 1.71+**.
 All const-friendly methods described above are available on this MSRV.
+
+## `no_std` Support
+
+The generated code only depends on `core`, so `UnitEnum` can be derived in `#![no_std]` crates.
 
 ## Requirements
 
@@ -164,28 +173,31 @@ The following methods are generated for any enum that derives `UnitEnum`:
 
 ```rust,ignore
 impl EnumName {
+    /// All unit variants in declaration order (excluding the "other" variant).
+    pub const VALUES: [Self; N] = [ ... ];
+
     /// Returns the string name of the variant.
-    pub fn name(&self) -> &str { ... }
+    pub const fn name(&self) -> &'static str { ... }
 
     /// Returns the zero-based ordinal (position) of the variant.
     /// For enums with an "other" variant, it returns the last ordinal.
-    pub fn ordinal(&self) -> usize { ... }
+    pub const fn ordinal(&self) -> usize { ... }
 
     /// Converts an ordinal to its corresponding variant, if valid.
     /// Returns None for invalid ordinals or the "other" variant.
-    pub fn from_ordinal(ord: usize) -> Option<Self> { ... }
+    pub const fn from_ordinal(ord: usize) -> Option<Self> { ... }
 
     /// Returns the discriminant value of the variant.
     /// For "other" variants, returns the contained value.
-    pub fn discriminant(&self) -> ReprType { ... }
+    pub const fn discriminant(&self) -> ReprType { ... }
 
     /// Converts a discriminant value to its corresponding variant.
     /// For enums with an "other" variant, always returns a value.
     /// For regular enums, returns None for undefined discriminants.
-    pub fn from_discriminant(discr: ReprType) -> Self { ... }  // or -> Option<Self>
+    pub const fn from_discriminant(discr: ReprType) -> Self { ... }  // or -> Option<Self>
 
     /// Returns the total number of unit variants (excluding "other" variant).
-    pub fn len() -> usize { ... }
+    pub const fn len() -> usize { ... }
 
     /// Returns an iterator over all unit variants of the enum.
     /// The "other" variant is not included in the iteration.

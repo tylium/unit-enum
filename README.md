@@ -16,6 +16,7 @@ consisting of unit variants. This macro simplifies working with such enums by pr
 - `from_discriminant`: Convert a discriminant back to an enum variant.
 - `len`: Get the total number of unit variants in the enum (excluding the "other" variant if present).
 - `values`: Returns an iterator over all unit variants of the enum.
+- `VALUES`: A constant array of all unit variants of the enum, in declaration order.
 
 ## Supported Enum Types
 
@@ -36,6 +37,10 @@ unit-enum = "1"
 ## Minimum Supported Rust Version (MSRV)
 
 This crate supports **Rust 1.71+**.
+
+## `no_std` Support
+
+The generated code only depends on `core`, so `UnitEnum` can be derived in `#![no_std]` crates.
 
 ## Quick Start
 
@@ -85,7 +90,8 @@ fn main() {
 ### Const-friendly methods
 
 Because all enum information is known at compile time, most of the generated
-methods are available as `const fn` and can be used in constant contexts.
+methods are available as `const fn` and can be used in constant contexts, along
+with the `VALUES` array of all unit variants.
 
 ```rust
 use unit_enum::UnitEnum;
@@ -101,12 +107,14 @@ const STATUS_COUNT: usize = Status::len();
 const FIRST_NAME: &str = Status::Active.name();
 const FROM_ORDINAL: Option<Status> = Status::from_ordinal(1);
 const FROM_DISCRIMINANT: Option<Status> = Status::from_discriminant(1);
+const ALL: [Status; Status::len()] = Status::VALUES;
 
 fn main() {
     assert_eq!(STATUS_COUNT, 3);
     assert_eq!(FIRST_NAME, "Active");
     assert_eq!(FROM_ORDINAL, Some(Status::Pending));
     assert_eq!(FROM_DISCRIMINANT, Some(Status::Active));
+    assert_eq!(ALL, [Status::Active, Status::Pending, Status::Inactive]);
 }
 ```
 
@@ -148,10 +156,10 @@ fn main() {
 
 The crate respects the enum's `#[repr]` attribute to determine the type of discriminant values. Supported types include:
 
-- `#[repr(i8)]`, `#[repr(i16)]`, `#[repr(i32)]`, `#[repr(i64)]`, `#[repr(i128)]`
-- `#[repr(u8)]`, `#[repr(u16)]`, `#[repr(u32)]`, `#[repr(u64)]`, `#[repr(u128)]`
+- `#[repr(i8)]`, `#[repr(i16)]`, `#[repr(i32)]`, `#[repr(i64)]`, `#[repr(i128)]`, `#[repr(isize)]`
+- `#[repr(u8)]`, `#[repr(u16)]`, `#[repr(u32)]`, `#[repr(u64)]`, `#[repr(u128)]`, `#[repr(usize)]`
 
-If no `#[repr]` attribute is specified, the discriminant type defaults to `i32`. Note that when using an "other" variant, the `#[repr]` attribute is required and must match the type of the "other" variant's field.
+If no integer `#[repr]` is specified, the discriminant type defaults to `i32`. Other hints are ignored for this purpose: `#[repr(C)]` uses `i32`, and `#[repr(C, u8)]` uses `u8`. Note that when using an "other" variant, the `#[repr]` attribute is required and must match the type of the "other" variant's field.
 
 ```rust
 use unit_enum::UnitEnum;
