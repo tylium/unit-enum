@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Next
+
+### Fixed
+
+- Fix implicit discriminants that follow an explicit discriminant using an operator such as `<<` or `|` (e.g. with `A = 1 << 3, B`, `B.discriminant()` now returns `9` instead of `16`, and `from_discriminant(9)` returns `B`)
+- Fix README examples that did not compile; they are now run as doctests
+
 ## Version 1.5.0 (2026-03-04)
 
 ### Added
